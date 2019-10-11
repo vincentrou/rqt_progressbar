@@ -1,6 +1,7 @@
 import os
 import rospkg
 import rospy
+from geometry_msgs.msg import Twist
 
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
@@ -23,8 +24,8 @@ class MyPlugin(Plugin):
                       help="Put plugin in silent mode")
         args, unknowns = parser.parse_known_args(context.argv())
         if not args.quiet:
-            print 'arguments: ', args
-            print 'unknowns: ', unknowns
+            print('arguments: ' + str(args))
+            print('unknowns: ' + str(unknowns))
 
         # Create QWidget
         self._widget = QWidget()
@@ -44,6 +45,10 @@ class MyPlugin(Plugin):
             self._widget.setWindowTitle(self._widget.windowTitle() + (' (%d)' % context.serial_number()))
         # Add widget to the user interface
         context.add_widget(self._widget)
+        rospy.Subscriber('cmd_vel', Twist, self.callback)
+
+    def callback(self, twist):
+        self._widget.progressBar.setValue(int(twist.linear.x*10))
 
     def shutdown_plugin(self):
         # TODO unregister all publishers here
